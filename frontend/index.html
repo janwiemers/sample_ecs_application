@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Sample ECS application - Frontend</title>
+
+    <style>
+      html {
+        font-family: sans-serif;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        margin: 10px;
+      }
+
+      a {
+        background-color: transparent;
+      }
+
+      a:active,
+      a:hover {
+        outline: 0;
+      }
+
+      b,
+      strong {
+        font-weight: bold;
+      }
+
+      h1 {
+        font-size: 2em;
+        margin: 0.67em 0;
+      }
+
+      mark {
+        background: #ff0;
+        color: #000;
+      }
+
+      pre {
+        overflow: auto;
+      }
+
+      code,
+      kbd,
+      pre,
+      samp {
+        font-family: monospace, monospace;
+        font-size: 1em;
+      }
+
+      button,
+      input,
+      optgroup,
+      select,
+      textarea {
+        color: inherit;
+        font: inherit;
+        margin: 0;
+      }
+
+      button {
+        overflow: visible;
+      }
+
+      button,
+      select {
+        text-transform: none;
+      }
+
+      button,
+      html input[type="button"],
+      input[type="reset"],
+      input[type="submit"] {
+        -webkit-appearance: button;
+        cursor: pointer;
+      }
+
+      button[disabled],
+      html input[disabled] {
+        cursor: default;
+      }
+
+      button::-moz-focus-inner,
+      input::-moz-focus-inner {
+        border: 0;
+        padding: 0;
+      }
+
+      input {
+        line-height: normal;
+      }
+
+      #log {
+        padding: 5px;
+      }
+
+      #logWrapper {
+        background: #efefef;
+        height: 200px;
+        margin-bottom: 10px;
+        overflow-x: scroll;
+      }
+
+      #status {
+        background: #dedede;
+        height: 20px;
+        padding: 5px;
+      }
+
+      .logEntry {
+        padding: 5px 3px;
+        animation: slide-up 0.4s ease;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 12px;
+      }
+
+      @keyframes slide-up {
+        0% {
+          background-color: #ffbf00;
+        }
+        100% {
+          background-color: transparent;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Sample ECS application - Frontend</h1>
+
+    <div id="status"></div>
+
+    <div id="logWrapper">
+      <div id="log"></div>
+    </div>
+
+    <button type="submit" id="start">Start</button>
+    <button type="submit" id="stop">Stop</button>
+    <button type="submit" id="clear">Reset</button>
+
+    <script>
+      (function() {
+        const logElement = document.getElementById('log')
+        const logWrapperElement = document.getElementById('logWrapper')
+        let interval
+
+        // function callApi() {
+        //   fetch('/backend/').then(function(response) {
+        //     return response.json()
+        //   }).then(function(data) {
+        //     console.log(data)
+        //     const response = JSON.stringify(data)
+        //     const newNode = document.createElement('div')
+        //     newNode.classList.add('logEntry')
+        //     newNode.textContent = response
+        //     logElement.appendChild(newNode)
+        //     logElement.scrollTop = logElement.scrollHeight;
+        //   })
+        // }
+
+        function callApi() {
+            const newNode = document.createElement('div')
+            newNode.classList.add('logEntry')
+            newNode.textContent = '{test:foo}'
+            logElement.appendChild(newNode)
+            logWrapperElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(polling = false) {
+          const text = polling ? "polling" : "stopped"
+          document.getElementById('status').innerText = `Status: ${text}`
+        }
+
+        document.getElementById('clear').addEventListener('click', function(e) {
+          e.preventDefault()
+          e.stopPropagation()
+
+          document.getElementById('log').innerText = ''
+          updateStatus()
+          clearInterval(interval)
+        })
+
+        updateStatus()
+        document.getElementById('start').addEventListener('click', function(e) {
+          e.preventDefault()
+          e.stopPropagation()
+
+          updateStatus(true)
+          interval = setInterval(callApi, 5000)
+        })
+
+        document.getElementById('stop').addEventListener('click', function(e) {
+          e.preventDefault()
+          e.stopPropagation()
+
+          clearInterval(interval)
+        })
+      })()
+    </script>
+  </body>
+</html>
