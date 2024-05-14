@@ -1,4 +1,3 @@
-
 version: '3'
 services:
   db:
@@ -24,7 +23,6 @@ services:
     links:
       - backend
 
-
   backend:
     image: node:22-alpine3.18
     command: npm start
@@ -45,5 +43,4 @@ services:
       - db
 
 volumes:
-  bundle_cache:
   postgres_data:

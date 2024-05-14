@@ -156,27 +156,18 @@
           fetch('/backend/records').then(function(response) {
             return response.json()
           }).then(function(data) {
-            console.log(data)
             const response = JSON.stringify(data)
             const newNode = document.createElement('div')
             newNode.classList.add('logEntry')
             newNode.textContent = response
             logElement.appendChild(newNode)
-            logElement.scrollTop = logElement.scrollHeight;
+            logWrapperElement.scrollTop = logElement.scrollHeight;
           })
         }
 
         function callApiAddRecord() {
           fetch('/backend/record/add')
         }
-
-        // function callApi() {
-        //   const newNode = document.createElement('div')
-        //   newNode.classList.add('logEntry')
-        //   newNode.textContent = '{test:foo}'
-        //   logElement.appendChild(newNode)
-        //   logWrapperElement.scrollTop = logElement.scrollHeight;
-        // }
 
         function updateStatus(polling = false) {
           const text = polling ? "polling" : "stopped"
@@ -205,6 +196,7 @@
           e.stopPropagation()
 
           updateStatus(true)
+          callApi()
           interval = setInterval(callApi, 5000)
         })
 

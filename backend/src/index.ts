@@ -30,16 +30,9 @@ if(process.env.DB_SECRET_ARN) {
   databasePassword = password
 }
 
-const sql = postgres(`postgres://${databaseUser}:${databasePassword}@${databaseHost}:5432/${databaseName}`, {
-  host     : databaseHost,
-  port     : 5432,
-  database : databaseName,
-  username : databaseUser,
-  password : databasePassword,
-})
+const sql = postgres(`postgres://${databaseUser}:${databasePassword}@${databaseHost}:5432/${databaseName}`)
 
 const tableName = 'my_table'
-
 await sql`CREATE TABLE IF NOT EXISTS ${ sql(tableName) } (id serial primary key, name text)`
 
 app.use(cors({

@@ -1,14 +1,21 @@
-# Welcome to your CDK TypeScript project
+# Sample ECS application Stack
 
-This is a blank project for CDK development with TypeScript.
+This sample ECS setup deploys two containers to an ECS cluster using the fargate capacity provider as well as a postgres database to the private networks of the VPC.
+It'll allow the backend container to connect to the database using credentials stored in the secrets manager and makes it available through a frontend. All of the containers are hosted behind a internetfacing ApplicationLoadbalancer deployed in the public subnets.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Architecture
 
-## Useful commands
+![Architecture](./docs/lab_arch.png)
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+## Deployment
+
+```bash
+# If not already initialized
+npx cdk init
+
+# deploy the stack
+npx cdk deploy
+
+# destroy the stack
+npx cdk destroy
+```
