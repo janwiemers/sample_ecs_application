@@ -4,9 +4,53 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
-import * as ecsPattern from 'aws-cdk-lib/aws-ecs-patterns'
+
+interface CreateServiceProps {
+  name: string
+  asset: string
+  port: number,
+  desiredCount: number
+  environment: {
+    [key: string]: string;
+  }
+}
 
 export class SampleEcsApplicationStack extends cdk.Stack {
+  private cluster: ecs.Cluster;
+
+  private createEcsService(props: CreateServiceProps): ecs.FargateService {
+    const backendTaskDefinition = new ecs.TaskDefinition(this, `${props.name}-task-definition`, {
+      cpu: '256',
+      memoryMiB: '512',
+      compatibility: ecs.Compatibility.FARGATE,
+      runtimePlatform: {
+        cpuArchitecture: ecs.CpuArchitecture.ARM64,
+        operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+      },
+    })
+
+    backendTaskDefinition.addContainer(`${props.name}-task-definition`, {
+      image: ecs.ContainerImage.fromAsset(props.asset, {
+        buildArgs: {
+          "--platform": "linux/arm64,linux/amd64",
+        },
+      }),
+      portMappings: [{
+        containerPort: props.port,
+        hostPort: props.port
+      }],
+      containerName: `sample-ecs-application-${props.name}`,
+      environment: props.environment,
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: props.name, logRetention: 1 }),
+    })
+
+    return new ecs.FargateService(this, `service-${props.name}`, {
+      cluster: this.cluster,
+      desiredCount: props.desiredCount,
+      taskDefinition: backendTaskDefinition,
+    })
+  }
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -20,17 +64,34 @@ export class SampleEcsApplicationStack extends cdk.Stack {
       username
     });
 
+    const engine = rds.DatabaseInstanceEngine.postgres({
+      version: rds.PostgresEngineVersion.VER_16_2,
+    });
+
+    const parameterGroup = new rds.ParameterGroup(
+      this,
+      "parameter-group",
+      {
+        engine,
+        parameters: {
+          "rds.force_ssl": "0",
+        },
+      }
+    );
+
     const database = new rds.DatabaseInstance(this, 'database', {
       databaseName: 'sampleEcsApplication',
       credentials: rds.Credentials.fromSecret(secret, username),
       vpc,
+      parameterGroup,
       vpcSubnets: vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS}),
       engine: rds.DatabaseInstanceEngine.POSTGRES,
       autoMinorVersionUpgrade: true,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
 
-    const cluster = new ecs.Cluster(this, 'cluster', {
+    this.cluster = new ecs.Cluster(this, 'cluster', {
       clusterName: 'sample-ecs-application',
       vpc,
       enableFargateCapacityProviders: true,
@@ -42,44 +103,20 @@ export class SampleEcsApplicationStack extends cdk.Stack {
       internetFacing: true,
     })
 
-    const backendTaskDefinition = new ecs.TaskDefinition(this, 'backend-task-definition', {
-      cpu: '256',
-      memoryMiB: '512',
-      compatibility: ecs.Compatibility.FARGATE,
-      runtimePlatform: {
-        cpuArchitecture: ecs.CpuArchitecture.ARM64,
-        operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
-      },
-    })
-
-    backendTaskDefinition.addContainer('backend-task-definition', {
-      image: ecs.ContainerImage.fromAsset('./backend', {
-        buildArgs: {
-          "--platform": "linux/arm64,linux/amd64",
-        },
-      }),
-      portMappings: [{
-        containerPort: 80,
-        hostPort: 80
-      }],
-      containerName: 'sample-ecs-application-backend',
-      environment: {
-        PORT: '80',
-        CORS_ORIGIN: '*',
-        DB_SECRET_ARN: secret.secretArn,
-        DATABASE_HOST: database.dbInstanceEndpointAddress,
-        DATABASE_PORT: database.dbInstanceEndpointPort,
-      },
-      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'sample-ecs-application-backend', logRetention: 1 }),
-    })
-
-    const backend = new ecs.FargateService(this, 'backend', {
-      cluster,
+    const backend = this.createEcsService({
+      name: 'backend',
       desiredCount: 2,
-      taskDefinition: backendTaskDefinition,
+      port: 80,
+      asset: './backend',
+      environment: {
+          PORT: '80',
+          CORS_ORIGIN: '*',
+          DB_SECRET_ARN: secret.secretArn,
+        },
     })
 
-    secret.grantRead(backendTaskDefinition.taskRole)
+    // allow task definition to read the secret
+    secret.grantRead(backend.taskDefinition.taskRole)
 
     // Allow connections from the backend service
     database.connections.allowDefaultPortFrom(backend)
@@ -99,46 +136,18 @@ export class SampleEcsApplicationStack extends cdk.Stack {
         containerName: 'sample-ecs-application-backend',
         containerPort: 80
       })],
+      deregistrationDelay: cdk.Duration.seconds(0),
       healthCheck: {
         path: '/health'
       }
     })
 
-    // Frontend
-    const frontendTaskDefinition = new ecs.TaskDefinition(this, 'frontend-task-definition', {
-      cpu: '256',
-      memoryMiB: '512',
-      compatibility: ecs.Compatibility.FARGATE,
-      runtimePlatform: {
-        cpuArchitecture: ecs.CpuArchitecture.ARM64,
-        operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
-      },
-    })
-
-    frontendTaskDefinition.addContainer('frontend-task-definition', {
-      image: ecs.ContainerImage.fromAsset('./frontend', {
-        buildArgs: {
-          "--platform": "linux/arm64,linux/amd64",
-        },
-      }),
-      portMappings: [{
-        containerPort: 80,
-        hostPort: 80
-      }],
-      containerName: 'sample-ecs-application-frontend',
-      environment: {
-        PORT: '80',
-        CORS_ORIGIN: '*',
-        DATABASE_HOST: database.dbInstanceEndpointAddress,
-        DATABASE_PORT: database.dbInstanceEndpointPort,
-      },
-      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'sample-ecs-application-frontend', logRetention: 1 }),
-    })
-
-    const frontend = new ecs.FargateService(this, 'frontend', {
-      cluster,
+    const frontend = this.createEcsService({
+      name: 'frontend',
       desiredCount: 2,
-      taskDefinition: frontendTaskDefinition,
+      asset: './frontend',
+      environment: {},
+      port: 80
     })
 
     listener.addTargets('frontend', {
@@ -151,7 +160,7 @@ export class SampleEcsApplicationStack extends cdk.Stack {
         containerName: 'sample-ecs-application-frontend',
         containerPort: 80
       })],
-      deregistrationDelay: cdk.Duration.seconds(5),
+      deregistrationDelay: cdk.Duration.seconds(0),
       healthCheck: {
         healthyThresholdCount: 2,
       }

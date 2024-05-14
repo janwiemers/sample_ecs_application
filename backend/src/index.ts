@@ -10,18 +10,19 @@ const client = new SecretsManagerClient({
 
 const port = process.env.PORT || 3000;
 const corsOrigin     = process.env.CORS_ORIGIN || '*';
-let databaseHost     = process.env.DATABASE_HOST || undefined
-let databaseName     = process.env.DATABASE_NAME || undefined
-let databaseUser     = process.env.DATABASE_USERNAME || undefined
-let databasePassword = process.env.DATABASE_PASSWORD || undefined
+var databaseHost     = process.env.DATABASE_HOST
+var databaseName     = process.env.DATABASE_NAME
+var databaseUser     = process.env.DATABASE_USERNAME
+var databasePassword = process.env.DATABASE_PASSWORD
 
-
-if(!databaseHost) {
+if(process.env.DB_SECRET_ARN) {
   const command = new GetSecretValueCommand({
     SecretId: process.env.DB_SECRET_ARN
   });
   const response = await client.send(command);
-  let {password, dbname, host, username } = JSON.parse(response.SecretString!)
+  const secrets = JSON.parse(response.SecretString!)
+
+  let {password, dbname, host, username } = secrets
 
   databaseHost = host
   databaseName = dbname
