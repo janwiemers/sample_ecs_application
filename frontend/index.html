@@ -115,7 +115,7 @@
 
       .logEntry {
         padding: 5px 3px;
-        animation: slide-up 0.4s ease;
+        animation: slide-up 0.8s ease;
         font-family: 'Courier New', Courier, monospace;
         font-size: 12px;
       }
@@ -143,6 +143,7 @@
     <button type="submit" id="start">Start</button>
     <button type="submit" id="stop">Stop</button>
     <button type="submit" id="clear">Reset</button>
+    <button type="submit" id="addRecord">Add Record</button>
 
     <script>
       (function() {
@@ -150,32 +151,43 @@
         const logWrapperElement = document.getElementById('logWrapper')
         let interval
 
-        // function callApi() {
-        //   fetch('/backend/').then(function(response) {
-        //     return response.json()
-        //   }).then(function(data) {
-        //     console.log(data)
-        //     const response = JSON.stringify(data)
-        //     const newNode = document.createElement('div')
-        //     newNode.classList.add('logEntry')
-        //     newNode.textContent = response
-        //     logElement.appendChild(newNode)
-        //     logElement.scrollTop = logElement.scrollHeight;
-        //   })
-        // }
-
         function callApi() {
+          fetch('/backend/records').then(function(response) {
+            return response.json()
+          }).then(function(data) {
+            console.log(data)
+            const response = JSON.stringify(data)
             const newNode = document.createElement('div')
             newNode.classList.add('logEntry')
-            newNode.textContent = '{test:foo}'
+            newNode.textContent = response
             logElement.appendChild(newNode)
-            logWrapperElement.scrollTop = logElement.scrollHeight;
+            logElement.scrollTop = logElement.scrollHeight;
+          })
         }
+
+        function callApiAddRecord() {
+          fetch('/backend/record/add')
+        }
+
+        // function callApi() {
+        //   const newNode = document.createElement('div')
+        //   newNode.classList.add('logEntry')
+        //   newNode.textContent = '{test:foo}'
+        //   logElement.appendChild(newNode)
+        //   logWrapperElement.scrollTop = logElement.scrollHeight;
+        // }
 
         function updateStatus(polling = false) {
           const text = polling ? "polling" : "stopped"
           document.getElementById('status').innerText = `Status: ${text}`
         }
+
+        document.getElementById('addRecord').addEventListener('click', function(e) {
+          e.preventDefault()
+          e.stopPropagation()
+
+          callApiAddRecord()
+        })
 
         document.getElementById('clear').addEventListener('click', function(e) {
           e.preventDefault()

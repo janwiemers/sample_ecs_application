@@ -1,0 +1,49 @@
+
+version: '3'
+services:
+  db:
+    image: postgres:16.3-alpine3.19
+    environment:
+      POSTGRES_DB: sample_ecs_application
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    image: nginx:1.25.5-alpine
+    volumes:
+      - ./frontend/:/etc/nginx/html
+      - ./nginx/:/etc/nginx/conf.d
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+    links:
+      - backend
+
+
+  backend:
+    image: node:22-alpine3.18
+    command: npm start
+    working_dir: /app
+    environment:
+      DATABASE_NAME: sample_ecs_application
+      DATABASE_USERNAME: user
+      DATABASE_PASSWORD: password
+      DATABASE_HOST: db
+      PORT: 8080
+    volumes:
+      - ./backend/:/app
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    links:
+      - db
+
+volumes:
+  bundle_cache:
+  postgres_data:

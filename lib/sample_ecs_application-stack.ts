@@ -15,14 +15,14 @@ export class SampleEcsApplicationStack extends cdk.Stack {
       maxAzs: 2,
     })
 
-    // const username = 'root'
-    // const secret = new rds.DatabaseSecret(this, 'rds-secret', {
-    //   username
-    // });
+    const username = 'root'
+    const secret = new rds.DatabaseSecret(this, 'rds-secret', {
+      username
+    });
 
     const database = new rds.DatabaseInstance(this, 'database', {
       databaseName: 'sampleEcsApplication',
-      // credentials: rds.Credentials.fromSecret(secret, username),
+      credentials: rds.Credentials.fromSecret(secret, username),
       vpc,
       vpcSubnets: vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS}),
       engine: rds.DatabaseInstanceEngine.POSTGRES,
@@ -66,6 +66,7 @@ export class SampleEcsApplicationStack extends cdk.Stack {
       environment: {
         PORT: '80',
         CORS_ORIGIN: '*',
+        DB_SECRET_ARN: secret.secretArn,
         DATABASE_HOST: database.dbInstanceEndpointAddress,
         DATABASE_PORT: database.dbInstanceEndpointPort,
       },
@@ -77,6 +78,8 @@ export class SampleEcsApplicationStack extends cdk.Stack {
       desiredCount: 2,
       taskDefinition: backendTaskDefinition,
     })
+
+    secret.grantRead(backendTaskDefinition.taskRole)
 
     // Allow connections from the backend service
     database.connections.allowDefaultPortFrom(backend)

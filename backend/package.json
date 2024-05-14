@@ -4,20 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "npx tsx src/index.ts",
     "build": "tsc"
   },
+  "type": "module",
   "author": "Jan Wiemers",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.575.0",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "postgres": "^3.4.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.12.11",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.10.2",
     "typescript": "^5.4.5"
   }
 }

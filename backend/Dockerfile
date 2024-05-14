@@ -18,6 +18,7 @@ WORKDIR /app
 COPY --from=builder /app/src/index.js /app
 COPY --from=builder /app/package.json /app
 COPY --from=builder /app/package-lock.json /app
+COPY --from=builder /app/tsconfig.json /app
 
 RUN npm install --only=prod
 
