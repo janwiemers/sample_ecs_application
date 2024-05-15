@@ -12,6 +12,8 @@
         font-family: sans-serif;
         -ms-text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
+        background-color: #231F20;
+        color: #fff
       }
 
       body {
@@ -71,6 +73,9 @@
       button,
       select {
         text-transform: none;
+        background: #0B7366;
+        border: 0;
+        padding: 6px 16px;
       }
 
       button,
@@ -97,19 +102,27 @@
         line-height: normal;
       }
 
+      .actions {
+        margin-bottom: 10px;
+      }
+
       #log {
         padding: 5px;
       }
 
       #logWrapper {
-        background: #efefef;
-        height: 200px;
+        background: #35758F;
+        position: absolute;
+        top: 186px;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
         margin-bottom: 10px;
         overflow-x: scroll;
       }
 
       #status {
-        background: #dedede;
+        background: #05518C;
         height: 20px;
         padding: 5px;
       }
@@ -123,7 +136,7 @@
 
       @keyframes slide-up {
         0% {
-          background-color: #ffbf00;
+          background-color: #218A68;
         }
         100% {
           background-color: transparent;
@@ -133,7 +146,16 @@
   </head>
 
   <body>
-    <h1>Sample ECS application - Frontend</h1>
+    <h1>Star Wars name generator</h1>
+    <p>
+      generate and store Star Wars character names in the database.
+    </p>
+    <div class="actions">
+      <button type="submit" id="start">Start</button>
+      <button type="submit" id="stop">Stop</button>
+      <button type="submit" id="clear">Reset</button>
+      <button type="submit" id="addRecord">Add new Character</button>
+    </div>
 
     <div id="status"></div>
 
@@ -141,10 +163,7 @@
       <div id="log"></div>
     </div>
 
-    <button type="submit" id="start">Start</button>
-    <button type="submit" id="stop">Stop</button>
-    <button type="submit" id="clear">Reset</button>
-    <button type="submit" id="addRecord">Add Record</button>
+    
 
     <script>
       (function() {
@@ -152,21 +171,29 @@
         const logWrapperElement = document.getElementById('logWrapper')
         let interval
 
+        function addLogEntry(data) {
+          const response = JSON.stringify(data)
+          const newNode = document.createElement('div')
+          newNode.classList.add('logEntry')
+          newNode.textContent = response
+          logElement.appendChild(newNode)
+          logWrapperElement.scrollTop = logElement.scrollHeight;
+        }
+
         function callApi() {
           fetch('/backend/records').then(function(response) {
             return response.json()
           }).then(function(data) {
-            const response = JSON.stringify(data)
-            const newNode = document.createElement('div')
-            newNode.classList.add('logEntry')
-            newNode.textContent = response
-            logElement.appendChild(newNode)
-            logWrapperElement.scrollTop = logElement.scrollHeight;
+            addLogEntry(data)
           })
         }
 
         function callApiAddRecord() {
-          fetch('/backend/record/add')
+          fetch('/backend/record/add').then(function(response) {
+            return response.json()
+          }).then(function(data) {
+            addLogEntry(data)
+          })
         }
 
         function updateStatus(polling = false) {

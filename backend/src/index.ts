@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import postgres from 'postgres'
 import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
+import { uniqueNamesGenerator, starWars } from 'unique-names-generator';
+
 const app = express();
 
 const client = new SecretsManagerClient({
@@ -45,17 +47,30 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.get('/backend/records', async (req: Request, res: Response) => {
-  const result = await sql`SELECT COUNT(id) FROM ${ sql(tableName) }`
+  const count = await sql`SELECT COUNT(id) FROM ${ sql(tableName) }`
+  const result = (await sql`SELECT name FROM ${ sql(tableName) } ORDER BY id DESC`).map((row: postgres.Row) => {
+    return row.name
+  })
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
-     .send({path: '/backend/records', method: 'GET', value: result});
+     .send({path: '/backend/records', names: result, count});
 })
 
 app.get('/backend/record/add', async (req: Request, res: Response) => {
-  const result = await sql`INSERT INTO ${ sql(tableName) } ${sql({ name: Date.now()})}`
+  const shortName = uniqueNamesGenerator({
+    dictionaries: [starWars],
+  });
+  const result = await sql`INSERT INTO ${ sql(tableName) } ${sql({ name: shortName})}`
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
-     .send({path: '/health', method: 'GET', value: result});
+     .send({path: '/backend/record/add', method: 'GET', value: {name: shortName}});
+})
+
+app.get('/backend/records/clean', async (req: Request, res: Response) => {
+  const result = await sql`TRUNCATE TABLE ${ sql(tableName) }`
+
+  res.setHeader('Content-Type', 'application/json; charset=utf-8')
+     .send({path: '/backend/records/clean', method: 'GET', value: result});
 })
 
 app.listen(port, () => {
