@@ -134,6 +134,10 @@
         font-size: 12px;
       }
 
+      #resetDatabase {
+        background: #B70100;
+      }
+
       @keyframes slide-up {
         0% {
           background-color: #218A68;
@@ -155,6 +159,7 @@
       <button type="submit" id="stop">Stop</button>
       <button type="submit" id="clear">Reset</button>
       <button type="submit" id="addRecord">Add new Character</button>
+      <button type="submit" id="resetDatabase">Truncate Database</button>
     </div>
 
     <div id="status"></div>
@@ -196,6 +201,14 @@
           })
         }
 
+        function callApiTruncate() {
+          fetch('/backend/records/clean').then(function(response) {
+            return response.json()
+          }).then(function(data) {
+            addLogEntry(data)
+          })
+        }
+
         function updateStatus(polling = false) {
           const text = polling ? "polling" : "stopped"
           document.getElementById('status').innerText = `Status: ${text}`
@@ -231,7 +244,15 @@
           e.preventDefault()
           e.stopPropagation()
 
+          updateStatus()
           clearInterval(interval)
+        })
+
+        document.getElementById('resetDatabase').addEventListener('click', function(e) {
+          e.preventDefault()
+          e.stopPropagation()
+
+          callApiTruncate()
         })
       })()
     </script>
