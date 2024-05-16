@@ -25,7 +25,7 @@ services:
 
   backend:
     image: node:22-alpine3.18
-    command: npm start
+    command: sh -c "npm install --quiet && npm start"
     working_dir: /app
     environment:
       DATABASE_NAME: sample_ecs_application
