@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install
+RUN npm install --quiet
 RUN npm run build
 
 FROM node:22-alpine3.18
@@ -20,6 +20,8 @@ COPY --from=builder /app/package.json /app
 COPY --from=builder /app/package-lock.json /app
 COPY --from=builder /app/tsconfig.json /app
 
-RUN npm install --only=prod
+RUN npm install --only=prod --quiet
 
-CMD ["node", "index.js"]
+RUN npm install pm2 -g
+
+CMD ["pm2-runtime", "index.js"]

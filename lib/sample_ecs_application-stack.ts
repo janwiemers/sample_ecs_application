@@ -4,6 +4,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 
 interface CreateServiceProps {
   name: string
@@ -31,9 +32,7 @@ export class SampleEcsApplicationStack extends cdk.Stack {
 
     backendTaskDefinition.addContainer(`${props.name}-task-definition`, {
       image: ecs.ContainerImage.fromAsset(props.asset, {
-        buildArgs: {
-          "--platform": "linux/arm64,linux/amd64",
-        },
+        platform: ecrAssets.Platform.LINUX_ARM64
       }),
       portMappings: [{
         containerPort: props.port,

@@ -22,7 +22,6 @@
   "dependencies": {
     "aws-cdk-lib": "2.138.0",
     "constructs": "^10.0.0",
-    "postgres": "^3.4.4",
     "source-map-support": "^0.5.21"
   }
 }
