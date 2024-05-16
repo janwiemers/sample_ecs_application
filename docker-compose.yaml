@@ -17,7 +17,7 @@ services:
       - ./frontend/:/etc/nginx/html
       - ./nginx/:/etc/nginx/conf.d
     ports:
-      - 80:80
+      - 8080:8080
     depends_on:
       - backend
     links:
@@ -32,11 +32,11 @@ services:
       DATABASE_USERNAME: user
       DATABASE_PASSWORD: password
       DATABASE_HOST: db
-      PORT: 8080
+      PORT: 3000
     volumes:
       - ./backend/:/app
     ports:
-      - 8080:8080
+      - 3000:3000
     depends_on:
       - db
     links:
