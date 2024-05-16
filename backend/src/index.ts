@@ -47,13 +47,13 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.get('/backend/records', async (req: Request, res: Response) => {
-  const count = await sql`SELECT COUNT(id) FROM ${ sql(tableName) }`
+  const count = (await sql`SELECT COUNT(id) FROM ${ sql(tableName) }`)
   const result = (await sql`SELECT name FROM ${ sql(tableName) } ORDER BY id DESC`).map((row: postgres.Row) => {
     return row.name
   })
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
-     .send({path: '/backend/records', names: result, count});
+     .send({path: '/backend/records', names: result, count: count[0].count});
 })
 
 app.get('/backend/record/add', async (req: Request, res: Response) => {

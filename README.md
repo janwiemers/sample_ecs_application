@@ -34,15 +34,31 @@ The stack consists out of a database `db` service the `backend` as well as the `
 
 - [Docker](https://www.docker.com/) or [Finch](https://github.com/runfinch/finch)
 
+### Starting
+
+```sh
+# Starting
+$ docker compose up
+
+# Starting in deamon mode
+$ docker compose up -d
+
+# tailing logs for a single container
+$ docker compose logs {container name} -f
+
+# cleanup
+$ docker compose down
+```
+
 ## Deployment
 
 ```bash
 # If not already initialized
-npx cdk init
+$ npx cdk init
 
 # deploy the stack
-npx cdk deploy
+$ npx cdk deploy
 
 # destroy the stack
-npx cdk destroy
+$ npx cdk destroy
 ```
