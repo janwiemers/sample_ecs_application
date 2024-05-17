@@ -25,14 +25,14 @@ export class SampleEcsApplicationStack extends cdk.Stack {
       memoryMiB: '512',
       compatibility: ecs.Compatibility.FARGATE,
       runtimePlatform: {
-        cpuArchitecture: ecs.CpuArchitecture.ARM64,
+        cpuArchitecture: ecs.CpuArchitecture.X86_64,
         operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
       },
     })
 
     backendTaskDefinition.addContainer(`${props.name}-task-definition`, {
       image: ecs.ContainerImage.fromAsset(props.asset, {
-        platform: ecrAssets.Platform.LINUX_ARM64
+        platform: ecrAssets.Platform.LINUX_AMD64
       }),
       portMappings: [{
         containerPort: props.port,

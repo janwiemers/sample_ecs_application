@@ -53,8 +53,8 @@ $ docker compose down
 ## Deployment
 
 ```bash
-# If not already initialized
-$ npx cdk init
+# If the CDK inside the account is not already bootstrapped
+$ npx cdk bootstrap
 
 # deploy the stack
 $ npx cdk deploy
