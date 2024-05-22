@@ -106,6 +106,23 @@ This repository contains a `docker compose` stack that can be used for local dev
 
 The stack consists out of a database `db` service the `backend` as well as the `frontend` service. The Main entry point here will the the frontend service which is an [nginx](https://nginx.org/) used to host the static html content as well as acting as a [reverse proxy ](https://en.wikipedia.org/wiki/Reverse_proxy) to access the express backend. The configuration for nginx is places in the `/nginx` folder.
 
+### Deployment through CDK
+
+```bash
+npm install
+npx cdk deploy
+```
+
+![Approve deployment](./docs/7_deployment.png)
+
+You can check the deployment progress afterwards in the cloudformation console.
+
+![Cloudformation](./docs/8_cloudformation.png)
+
+You can see the details of the stack by opening the stack details page.
+
+![Cloudformation](./docs/9_resources.png)
+
 ### Starting
 
 ```sh
